@@ -1,7 +1,22 @@
+using Bansi.Examen.AccesoDatos;
+using Bansi.Examen.Infrastructure.Gateways;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpClient(nameof(HttpExamenGateway), client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["WebServiceBaseUrl"]!);
+});
+
+builder.Services.AddScoped<IClsExamenFactory>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("BdiExamen")!;
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    return new ClsExamenFactory(connectionString, httpClientFactory);
+});
 
 var app = builder.Build();
 
