@@ -27,10 +27,10 @@ public class EfExamenRepository : IExamenGateway
 
             return ResultadoOperacion.Ok("Registro insertado satisfactoriamente");
         }
-        catch (Exception ex)
+        catch
         {
             await transaction.RollbackAsync();
-            return ResultadoOperacion.Error(ex.Message);
+            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
         }
     }
 
@@ -53,10 +53,10 @@ public class EfExamenRepository : IExamenGateway
 
             return ResultadoOperacion.Ok("Registro actualizado satisfactoriamente");
         }
-        catch (Exception ex)
+        catch
         {
             await transaction.RollbackAsync();
-            return ResultadoOperacion.Error(ex.Message);
+            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
         }
     }
 
@@ -78,35 +78,28 @@ public class EfExamenRepository : IExamenGateway
 
             return ResultadoOperacion.Ok("Registro eliminado satisfactoriamente");
         }
-        catch (Exception ex)
+        catch
         {
             await transaction.RollbackAsync();
-            return ResultadoOperacion.Error(ex.Message);
+            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
         }
     }
 
     public async Task<ResultadoConsulta> ConsultarAsync(string? nombre, string? descripcion)
     {
-        try
-        {
-            var query = _context.Examenes.AsQueryable();
+        var query = _context.Examenes.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(nombre))
-                query = query.Where(e => e.Nombre != null && e.Nombre.Contains(nombre));
+        if (!string.IsNullOrWhiteSpace(nombre))
+            query = query.Where(e => e.Nombre != null && e.Nombre.Contains(nombre));
 
-            if (!string.IsNullOrWhiteSpace(descripcion))
-                query = query.Where(e => e.Descripcion != null && e.Descripcion.Contains(descripcion));
+        if (!string.IsNullOrWhiteSpace(descripcion))
+            query = query.Where(e => e.Descripcion != null && e.Descripcion.Contains(descripcion));
 
-            var resultados = await query
-                .OrderBy(e => e.Id)
-                .Select(e => new ExamenDto { Id = e.Id, Nombre = e.Nombre, Descripcion = e.Descripcion })
-                .ToListAsync();
+        var resultados = await query
+            .OrderBy(e => e.Id)
+            .Select(e => new ExamenDto { Id = e.Id, Nombre = e.Nombre, Descripcion = e.Descripcion })
+            .ToListAsync();
 
-            return ResultadoConsulta.Ok(resultados);
-        }
-        catch (Exception ex)
-        {
-            return ResultadoConsulta.Error(ex.Message);
-        }
+        return ResultadoConsulta.Ok(resultados);
     }
 }
