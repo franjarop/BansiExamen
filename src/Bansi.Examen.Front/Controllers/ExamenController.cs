@@ -30,7 +30,6 @@ public class ExamenController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Agregar(ModoAcceso modo, string nombre, string descripcion)
     {
         var cls = _clsExamenFactory.Crear(modo);
@@ -42,7 +41,6 @@ public class ExamenController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Actualizar(ModoAcceso modo, int id, string nombre, string descripcion)
     {
         var cls = _clsExamenFactory.Crear(modo);
@@ -54,7 +52,6 @@ public class ExamenController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Eliminar(ModoAcceso modo, int id)
     {
         var cls = _clsExamenFactory.Crear(modo);

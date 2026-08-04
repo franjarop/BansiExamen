@@ -1,10 +1,13 @@
 using Bansi.Examen.AccesoDatos;
 using Bansi.Examen.Infrastructure.Gateways;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
 
 builder.Services.AddHttpClient(nameof(HttpExamenGateway), client =>
 {
@@ -20,11 +23,9 @@ builder.Services.AddScoped<IClsExamenFactory>(sp =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/Examen");
     app.UseHsts();
 }
 
@@ -37,6 +38,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Examen}/{action=Index}/{id?}");
 
 app.Run();

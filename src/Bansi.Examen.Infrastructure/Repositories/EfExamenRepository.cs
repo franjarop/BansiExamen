@@ -30,7 +30,7 @@ public class EfExamenRepository : IExamenGateway
         catch
         {
             await transaction.RollbackAsync();
-            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
+            throw;
         }
     }
 
@@ -56,7 +56,7 @@ public class EfExamenRepository : IExamenGateway
         catch
         {
             await transaction.RollbackAsync();
-            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
+            throw;
         }
     }
 
@@ -81,7 +81,7 @@ public class EfExamenRepository : IExamenGateway
         catch
         {
             await transaction.RollbackAsync();
-            throw; // falla inesperada (BD caída, timeout, etc.) — la atrapa el middleware, no se controla aquí
+            throw;
         }
     }
 

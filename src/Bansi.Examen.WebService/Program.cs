@@ -1,3 +1,4 @@
+using System.Reflection;
 using Bansi.Examen.Application.Interfaces;
 using Bansi.Examen.Application.Services;
 using Bansi.Examen.Infrastructure.Persistence;
@@ -7,12 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile));
+});
 
 builder.Services.AddDbContext<ExamenDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("BdiExamen")));
@@ -22,7 +24,6 @@ builder.Services.AddScoped<ExamenService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
