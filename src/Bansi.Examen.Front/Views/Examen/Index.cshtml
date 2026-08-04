@@ -1,0 +1,85 @@
+@model Bansi.Examen.Front.Models.ExamenIndexViewModel
+@using Bansi.Examen.AccesoDatos
+
+@{
+    ViewData["Title"] = "Examen";
+}
+
+<h1>Mantenimiento de Examen</h1>
+
+@if (TempData["Mensaje"] != null)
+{
+    var exito = TempData["Exito"] as bool? ?? false;
+    <div class="alert @(exito ? "alert-success" : "alert-danger")">
+        @TempData["Mensaje"]
+    </div>
+}
+
+@if (!Model.ConsultaExitosa)
+{
+    <div class="alert alert-danger">
+        No se pudo consultar el listado: @Model.MensajeError
+    </div>
+}
+
+<h4>Modo de acceso</h4>
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="modo" id="modoSp" value="StoredProcedure"
+               checked="@(Model.Modo == ModoAcceso.StoredProcedure)" onchange="this.form.submit()" />
+        <label class="form-check-label" for="modoSp">Stored Procedures</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="modo" id="modoWs" value="WebService"
+               checked="@(Model.Modo == ModoAcceso.WebService)" onchange="this.form.submit()" />
+        <label class="form-check-label" for="modoWs">WebService</label>
+    </div>
+</form>
+
+<h4>Agregar</h4>
+<form asp-action="Agregar" method="post" class="row g-2 mb-4">
+    <input type="hidden" name="modo" value="@Model.Modo" />
+    <div class="col-auto">
+        <input type="text" name="nombre" class="form-control" placeholder="Nombre" required maxlength="255" />
+    </div>
+    <div class="col-auto">
+        <input type="text" name="descripcion" class="form-control" placeholder="Descripción" required maxlength="255" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Agregar</button>
+    </div>
+</form>
+
+<h4>Consultar / Actualizar / Eliminar</h4>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var examen in Model.Examenes)
+        {
+            <tr>
+                <td>@examen.Id</td>
+                <td><input form="form-@examen.Id" type="text" name="nombre" value="@examen.Nombre" class="form-control form-control-sm" maxlength="255" /></td>
+                <td><input form="form-@examen.Id" type="text" name="descripcion" value="@examen.Descripcion" class="form-control form-control-sm" maxlength="255" /></td>
+                <td class="text-nowrap">
+                    <form id="form-@examen.Id" asp-action="Actualizar" method="post" class="d-inline">
+                        <input type="hidden" name="modo" value="@Model.Modo" />
+                        <input type="hidden" name="id" value="@examen.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Actualizar</button>
+                    </form>
+                    <form asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('¿Eliminar este registro?');">
+                        <input type="hidden" name="modo" value="@Model.Modo" />
+                        <input type="hidden" name="id" value="@examen.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
