@@ -1,6 +1,6 @@
 namespace Bansi.Examen.Domain;
 
-public class Examen
+public class RegistroExamen
 {
     public int Id { get; set; }
     public string? Nombre { get; set; }
