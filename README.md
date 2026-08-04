@@ -5,9 +5,17 @@ resuelto con  Clean Architecture, inyección de dependencias, y la posibilidad d
 por un WebService, cambiando entre uno y otro desde la pantalla.
 
 ## Arquitectura
+Clean arquitecture en capas con doble via de acceso a los datos:
+-web services
+-Store procedure
 
-El Front nunca toca SQL ni el WebService directamente — todo pasa por la DLL, que decide en tiempo real si guarda por 
-Stored Procedures o llamando al WebService, según lo que elijas en pantalla.
+El proyecto esta conformado por 6 capas:
+-Dominio
+-Aplication
+-Infraestructure 
+-Web service
+-DLL (Acceso a los datos)
+-Front 
 
 ## Stack
 
