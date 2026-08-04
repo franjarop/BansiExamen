@@ -2,6 +2,7 @@ using Bansi.Examen.Application.Interfaces;
 using Bansi.Examen.Application.Services;
 using Bansi.Examen.Infrastructure.Persistence;
 using Bansi.Examen.Infrastructure.Repositories;
+using Bansi.Examen.WebService.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +23,8 @@ builder.Services.AddScoped<ExamenService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

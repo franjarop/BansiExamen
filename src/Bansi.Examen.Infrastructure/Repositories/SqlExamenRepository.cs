@@ -37,67 +37,55 @@ public class SqlExamenRepository : IExamenGateway
 
     public async Task<ResultadoConsulta> ConsultarAsync(string? nombre, string? descripcion)
     {
-        try
+        // Fallas de conexión/ejecución inesperadas se propagan (no se controlan aquí);
+        // las atrapa el manejador de excepciones de la capa que consuma este repositorio.
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand("spConsultar", connection)
         {
-            await using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@Nombre", (object?)nombre ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Descripcion", (object?)descripcion ?? DBNull.Value);
 
-            await using var command = new SqlCommand("spConsultar", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.AddWithValue("@Nombre", (object?)nombre ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Descripcion", (object?)descripcion ?? DBNull.Value);
-
-            var resultados = new List<ExamenDto>();
-            await using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                resultados.Add(new ExamenDto
-                {
-                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    Nombre = reader.IsDBNull(reader.GetOrdinal("Nombre")) ? null : reader.GetString(reader.GetOrdinal("Nombre")),
-                    Descripcion = reader.IsDBNull(reader.GetOrdinal("Descripcion")) ? null : reader.GetString(reader.GetOrdinal("Descripcion"))
-                });
-            }
-
-            return ResultadoConsulta.Ok(resultados);
-        }
-        catch (Exception ex)
+        var resultados = new List<ExamenDto>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
         {
-            return ResultadoConsulta.Error(ex.Message);
+            resultados.Add(new ExamenDto
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                Nombre = reader.IsDBNull(reader.GetOrdinal("Nombre")) ? null : reader.GetString(reader.GetOrdinal("Nombre")),
+                Descripcion = reader.IsDBNull(reader.GetOrdinal("Descripcion")) ? null : reader.GetString(reader.GetOrdinal("Descripcion"))
+            });
         }
+
+        return ResultadoConsulta.Ok(resultados);
     }
 
     private async Task<ResultadoOperacion> EjecutarSpEscritura(string nombreSp, Action<SqlCommand> agregarParametros)
     {
-        try
+        await using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+
+        await using var command = new SqlCommand(nombreSp, connection)
         {
-            await using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
+            CommandType = CommandType.StoredProcedure
+        };
 
-            await using var command = new SqlCommand(nombreSp, connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
+        agregarParametros(command);
 
-            agregarParametros(command);
+        command.Parameters.Add(new SqlParameter("@CodigoRetorno", SqlDbType.Int) { Direction = ParameterDirection.Output });
+        command.Parameters.Add(new SqlParameter("@DescripcionRetorno", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output });
 
-            command.Parameters.Add(new SqlParameter("@CodigoRetorno", SqlDbType.Int) { Direction = ParameterDirection.Output });
-            command.Parameters.Add(new SqlParameter("@DescripcionRetorno", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output });
+        await command.ExecuteNonQueryAsync();
 
-            await command.ExecuteNonQueryAsync();
+        var codigoRetorno = (int)command.Parameters["@CodigoRetorno"].Value;
+        var descripcionRetorno = command.Parameters["@DescripcionRetorno"].Value?.ToString() ?? string.Empty;
 
-            var codigoRetorno = (int)command.Parameters["@CodigoRetorno"].Value;
-            var descripcionRetorno = command.Parameters["@DescripcionRetorno"].Value?.ToString() ?? string.Empty;
-
-            return codigoRetorno == 0
-                ? ResultadoOperacion.Ok(descripcionRetorno)
-                : ResultadoOperacion.Error(descripcionRetorno);
-        }
-        catch (Exception ex)
-        {
-            return ResultadoOperacion.Error(ex.Message);
-        }
+        return codigoRetorno == 0
+            ? ResultadoOperacion.Ok(descripcionRetorno)
+            : ResultadoOperacion.Error(descripcionRetorno);
     }
 }
