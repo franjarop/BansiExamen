@@ -2,7 +2,7 @@ using Bansi.Examen.Application.Dtos;
 using Bansi.Examen.Application.Interfaces;
 using Bansi.Examen.Application.Validation;
 
-namespace Bansi.Examen.Application;
+namespace Bansi.Examen.Application.Services;
 
 public class ExamenService
 {
