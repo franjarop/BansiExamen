@@ -1,36 +1,34 @@
 # BansiExamen
 
-Proyecto de práctica para el examen básico de selección de Bansi: un catálogo simple (alta, baja, modificación y consulta), pero resuelto con arquitectura en capas de verdad — Clean Architecture, inyección de dependencias, y la posibilidad de guardar los datos por Stored Procedures o por un WebService, cambiando entre uno y otro.
+Proyecto de práctica para el examen básico de selección de Bansi: un catálogo simple (alta, baja, modificación y consulta), pero
+resuelto con  Clean Architecture, inyección de dependencias, y la posibilidad de guardar los datos por Stored Procedures o
+por un WebService, cambiando entre uno y otro desde la pantalla.
 
 ## Arquitectura
 
-```
-Front (MVC)  →  DLL (AccesoDatos / ClsExamen)  →  ┬─ Stored Procedures (ADO.NET) ─┐
-                                                     └─ WebService (Web API + EF Core) ─┴→ SQL Server
-```
-
-El Front solo le habla a la DLL de acceso a datos, nunca directo a SQL ni al WebService. La DLL es la que decide, según lo que elijas en pantalla, si guarda por SP o por WebService. El WebService, aparte, solo usa Entity Framework Core (nada de SPs ahí, es requisito). Infrastructure tiene las tres formas reales de guardar datos (EF, ADO.NET, HTTP) escondidas detrás de una sola interfaz, y Application/Domain traen las reglas de negocio que comparten el WebService y la DLL para no duplicar validaciones.
+El Front nunca toca SQL ni el WebService directamente — todo pasa por la DLL, que decide en tiempo real si guarda por 
+Stored Procedures o llamando al WebService, según lo que elijas en pantalla.
 
 ## Stack
 
 - .NET 8 / C#
 - ASP.NET Core Web API + MVC
 - Entity Framework Core
-- SQL Server 
+- SQL Server
 - Inyección de dependencias nativa de .NET
 
 ## Estructura del repositorio
 
 ```
 BansiExamen.sln
-├─ database/        Scripts SQL (creación de BD, tabla y stored procedures)
+├─ database/                       Scripts SQL (creación de BD, tabla y stored procedures)
 └─ src/
-   ├─ Bansi.Examen.Domain
-   ├─ Bansi.Examen.Application
-   ├─ Bansi.Examen.Infrastructure
-   ├─ Bansi.Examen.WebService
-   ├─ Bansi.Examen.AccesoDatos
-   └─ Bansi.Examen.Front
+   ├─ Bansi.Examen.Domain          Entidad RegistroExamen
+   ├─ Bansi.Examen.Application     DTOs, IExamenGateway, ExamenService, validaciones
+   ├─ Bansi.Examen.Infrastructure  Repositories/ (EF Core, ADO.NET) y Gateways/ (HTTP)
+   ├─ Bansi.Examen.WebService      Web API (ExamenController + middleware de excepciones)
+   ├─ Bansi.Examen.AccesoDatos     ClsExamen + ClsExamenFactory (la "apiexamen.dll")
+   └─ Bansi.Examen.Front           MVC (formularios, listado, selector de modo)
 ```
 
 ## Cómo ejecutar
@@ -43,10 +41,27 @@ Los scripts están en el folder `database/` y hay que correrlos en ese orden, po
 2. `02_CreateTable.sql` — crea la tabla `tblExamen`
 3. `03_StoredProcedures.sql` — crea `spAgregar`, `spActualizar`, `spEliminar` y `spConsultar`
 
-### Resto de la solución
+### WebService y Front
 
-Todavía no — falta armar WebService, AccesoDatos y Front.
+Se necesitan los dos corriendo al mismo tiempo, cada uno en su propia terminal:
 
-## Estado
+```
+cd src/Bansi.Examen.WebService && dotnet run
+```
+```
+cd src/Bansi.Examen.Front && dotnet run
+```
 
-🚧 En desarrollo.
+El Front busca el WebService en `http://localhost:5194/` (configurable en `src/Bansi.Examen.Front/appsettings.json`, clave `WebServiceBaseUrl`).
+
+En Visual Studio: clic derecho en la solución → **Set Startup Projects** → **Multiple startup projects** → poner ambos en **Start**.
+
+Entra al Front y da clic en **Examen** en el menú. Desde ahí puedes:
+- Elegir el modo de acceso (Stored Procedures o WebService) con el selector de arriba.
+- Agregar, actualizar y eliminar registros.
+- Consultar el listado, con estilo de filas alternadas.
+
+Toda operación muestra un mensaje de éxito o error en pantalla, sin importar el modo elegido.
+
+El WebService expone Swagger en modo desarrollo (`/swagger`), con la documentación de cada endpoint.
+

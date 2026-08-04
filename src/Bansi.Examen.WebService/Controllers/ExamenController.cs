@@ -15,6 +15,11 @@ public class ExamenController : ControllerBase
         _examenService = examenService;
     }
 
+    /// <summary>
+    /// Agrega un examen mediante Entity Framework a la base de datos.
+    /// </summary>
+    /// <param name="examen">Nombre y descripción del examen a insertar.</param>
+    /// <returns>Éxito/fracaso de la operación junto con una descripción.</returns>
     [HttpPost]
     public async Task<ActionResult<ResultadoOperacion>> Agregar(ExamenDto examen)
     {
@@ -22,6 +27,11 @@ public class ExamenController : ControllerBase
         return Ok(resultado);
     }
 
+    /// <summary>
+    /// Actualiza un examen mediante Entity Framework a la base de datos.
+    /// </summary>
+    /// <param name="examen">Id del examen a actualizar, junto con su nuevo nombre y descripción.</param>
+    /// <returns>Éxito/fracaso de la operación junto con una descripción.</returns>
     [HttpPut]
     public async Task<ActionResult<ResultadoOperacion>> Actualizar(ExamenDto examen)
     {
@@ -29,6 +39,11 @@ public class ExamenController : ControllerBase
         return Ok(resultado);
     }
 
+    /// <summary>
+    /// Elimina un examen mediante Entity Framework a la base de datos.
+    /// </summary>
+    /// <param name="id">Id del examen a eliminar.</param>
+    /// <returns>Éxito/fracaso de la operación junto con una descripción.</returns>
     [HttpDelete("{id:int}")]
     public async Task<ActionResult<ResultadoOperacion>> Eliminar(int id)
     {
@@ -36,6 +51,12 @@ public class ExamenController : ControllerBase
         return Ok(resultado);
     }
 
+    /// <summary>
+    /// Devuelve una consulta mediante Entity Framework a la base de datos.
+    /// </summary>
+    /// <param name="nombre">Filtro opcional por nombre (búsqueda parcial).</param>
+    /// <param name="descripcion">Filtro opcional por descripción (búsqueda parcial).</param>
+    /// <returns>Colección de exámenes que cumplen los criterios de búsqueda.</returns>
     [HttpGet]
     public async Task<ActionResult<ResultadoConsulta>> Consultar([FromQuery] string? nombre, [FromQuery] string? descripcion)
     {

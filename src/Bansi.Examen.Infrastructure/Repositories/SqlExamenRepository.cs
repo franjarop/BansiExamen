@@ -37,8 +37,6 @@ public class SqlExamenRepository : IExamenGateway
 
     public async Task<ResultadoConsulta> ConsultarAsync(string? nombre, string? descripcion)
     {
-        // Fallas de conexión/ejecución inesperadas se propagan (no se controlan aquí);
-        // las atrapa el manejador de excepciones de la capa que consuma este repositorio.
         await using var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();
 
